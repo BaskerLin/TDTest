@@ -3,6 +3,7 @@
 import pymel.core as pm
 from maya import OpenMaya
 import time
+import math
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 
 # from PySide2 import QtWidgets, QtCore
@@ -11,6 +12,7 @@ from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 from Qt import QtWidgets, QtGui
 from Qt.QtCompat import loadUi
 
+from functools import partial
 
 import os
 
@@ -46,6 +48,11 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         #滚动条
         self.ver_scr1 = self.listWidget_ID.verticalScrollBar()
         self.ver_scr2 = self.textEdit_Pos.verticalScrollBar()
+        # NOTE 添加保护 flag 
+        self.ver_scr1.protected = True
+        self.ver_scr2.protected = True
+        self.ver_scr1.valueChanged.connect(partial(self.move_scrollbar,self.ver_scr1))
+        self.ver_scr2.valueChanged.connect(partial(self.move_scrollbar,self.ver_scr2))
 
         self.listWidget_ID.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
@@ -54,12 +61,24 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         self.btn_self.clicked.connect(self.do_check_self)
         self.btn_select_all.clicked.connect(self.select_all)
 
-        self.ver_scr1.valueChanged.connect(self.move_scrollbar)
-        self.ver_scr2.valueChanged.connect(self.move_scrollbar)
 
         self.listWidget_ID.itemSelectionChanged.connect(self.item_click_multiple)
 
         self.hitface_list = []      # 储存穿插面
+
+    # 滚动条同步
+    def move_scrollbar(self, scroll, value):
+        # NOTE 保护 flag 避免互相调用 影响滚动
+        if scroll.protected:
+            scroll.protected = False
+        else:
+            return
+        scroll.setValue(value)
+        ratio = float(value)/scroll.maximum()
+        sync_scroll = self.ver_scr1 if scroll is self.ver_scr2 else self.ver_scr2
+        val = int(ratio*sync_scroll.maximum())
+        sync_scroll.setValue(val)
+        scroll.protected = True
 
     # 两个模型穿插检测
     def find_intersection_other(self, mesh1, mesh2):
@@ -349,10 +368,7 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
     def select_all(self):
         pm.select(self.hitface_list)
 
-    # 滚动条同步
-    def move_scrollbar(self, value):
-        self.ver_scr1.setValue(value)
-        self.ver_scr2.setValue(value)
+   
 
     # QListWidget 响应函数
     def item_click_multiple(self):
@@ -371,3 +387,11 @@ def main():
 
 if __name__ == "main":
     main()
+
+# import sys
+# MODULE = r"D:\Users\82047\Desktop\repo\TDTest\TDTest"
+# if MODULE not in sys.path:
+#     sys.path.append(MODULE)
+# import model_intersection
+# reload(model_intersection)
+# model_intersection.main()

@@ -343,7 +343,7 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
     def do_check_self(self):
 
         self.hitface_list = []
-        self.textBrowser_ID.clear()
+        self.listWidget_ID.clear()
         self.textEdit_Pos.clear()
 
         curr = time.time()

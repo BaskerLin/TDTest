@@ -1,7 +1,6 @@
 # coding:utf-8
 
 import pymel.core as pm
-import maya.cmds as mc
 
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 
@@ -46,9 +45,20 @@ class TopologyDetectionWin(MayaQWidgetBaseMixin,QtWidgets.QWidget):
         self.textEdit_transInfor1.setReadOnly(True)
         self.textEdit_transInfor2.setReadOnly(True)
 
+        # 滚动条
+        self.ver_scr1 = self.textEdit_transInfor1.verticalScrollBar()
+        self.ver_scr2 = self.textEdit_transInfor2.verticalScrollBar()
+
 
         #消息响应
         self.btn_detect.clicked.connect(self.detect_topology)
+
+        self.ver_scr1.valueChanged.connect(self.move_scrollbar)
+        self.ver_scr2.valueChanged.connect(self.move_scrollbar)
+
+    def move_scrollbar(self, value):
+        self.ver_scr1.setValue(value)
+        self.ver_scr2.setValue(value)
 
 
     def detect_topology(self):
@@ -68,7 +78,7 @@ class TopologyDetectionWin(MayaQWidgetBaseMixin,QtWidgets.QWidget):
         self.textEdit_transInfor1.clear()
         self.textEdit_transInfor2.clear()
 
-        W = True
+        W = True    # 拓扑是否一致
         numlist = [(sel.numVertices(), sel.numEdges(), sel.numFaces()) for sel in sellist]  # num_list是2*3的列表
 
 

@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 
 import pymel.core as pm
 from maya import OpenMaya
@@ -16,10 +16,10 @@ from functools import partial
 
 import os
 
-
-#获取当前文件所在路径
+# 获取当前文件所在路径
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 UI_PATH = os.path.join(CURRENT_PATH, "Exam3.ui")
+
 
 class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
     def __init__(self):
@@ -40,19 +40,18 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
             pm.deleteUI(object_name)
         self.setObjectName(object_name)
 
-
-        #设置默认值
+        # 设置默认值
         self.lineEdit_time.setReadOnly(True)
         self.textEdit_Pos.setReadOnly(True)
 
-        #滚动条
+        # 滚动条
         self.ver_scr1 = self.listWidget_ID.verticalScrollBar()
         self.ver_scr2 = self.textEdit_Pos.verticalScrollBar()
-        # NOTE 添加保护 flag 
+        # NOTE 添加保护 flag
         self.ver_scr1.protected = True
         self.ver_scr2.protected = True
-        self.ver_scr1.valueChanged.connect(partial(self.move_scrollbar,self.ver_scr1))
-        self.ver_scr2.valueChanged.connect(partial(self.move_scrollbar,self.ver_scr2))
+        self.ver_scr1.valueChanged.connect(partial(self.move_scrollbar, self.ver_scr1))
+        self.ver_scr2.valueChanged.connect(partial(self.move_scrollbar, self.ver_scr2))
 
         self.listWidget_ID.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
@@ -61,10 +60,9 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         self.btn_self.clicked.connect(self.do_check_self)
         self.btn_select_all.clicked.connect(self.select_all)
 
-
         self.listWidget_ID.itemSelectionChanged.connect(self.item_click_multiple)
 
-        self.hitface_list = []      # 储存穿插面
+        self.hitface_list = []  # 储存穿插面
 
     # 滚动条同步
     def move_scrollbar(self, scroll, value):
@@ -74,9 +72,9 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         else:
             return
         scroll.setValue(value)
-        ratio = float(value)/scroll.maximum()
+        ratio = float(value) / scroll.maximum()
         sync_scroll = self.ver_scr1 if scroll is self.ver_scr2 else self.ver_scr2
-        val = int(ratio*sync_scroll.maximum())
+        val = int(ratio * sync_scroll.maximum())
         sync_scroll.setValue(val)
         scroll.protected = True
 
@@ -92,14 +90,13 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         util = OpenMaya.MScriptUtil()  # MScriptUtil 实用程序类，用于在Python中使用指针和引用
         edge_len_ptr = util.asDoublePtr()  # asDoublePtr() 返回指向此类数据的双指针。
 
-
         edge_list = set()
         while not mesh1_itr.isDone():
             mesh1_itr.getLength(edge_len_ptr)  # getLength()返回当前边的长度。
             edge_len = util.getDouble(edge_len_ptr)  # getDouble() 获取Double型参数的值
 
-            start_pt = mesh1_itr.point(0, OpenMaya.MSpace.kWorld)     # point()返回当前边的指定顶点的位置。
-            end_pt = mesh1_itr.point(1, OpenMaya.MSpace.kWorld)       # MSpace 空间转换标识符
+            start_pt = mesh1_itr.point(0, OpenMaya.MSpace.kWorld)  # point()返回当前边的指定顶点的位置。
+            end_pt = mesh1_itr.point(1, OpenMaya.MSpace.kWorld)  # MSpace 空间转换标识符
             # kWorld 对象世界坐标系的数据
 
             raySource = OpenMaya.MFloatPoint(start_pt)  # MFloatPoint 以浮点类型来实现处理点
@@ -133,11 +130,8 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
             mesh1_itr.next()
 
-
         # 获取碰撞的边再通过边转面
         edge_list = ["%s.e[%s]" % (mesh1_dagPath.fullPathName(), edge_id) for edge_id in edge_list]
-
-
 
         facelist = pm.polyListComponentConversion(edge_list, fe=True, tf=True)
         # polyListComponentConversion 将多边形组件从一种或多种类型转换为另一种或多种类型
@@ -151,7 +145,7 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         thersold = 0.0001
 
         face_list = OpenMaya.MSelectionList()  # MSelectionList 全局选择列表,MObject的列表。
-        hitface_list = []   # 用于储存穿插面
+        hitface_list = []  # 用于储存穿插面
 
         sel_list = OpenMaya.MSelectionList()
         OpenMaya.MGlobal.getActiveSelectionList(sel_list)  # 选择存储的列表
@@ -178,7 +172,7 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                 itr1.getTriangles(point_list1, index_list1, space)  # 获取三角形面片中所有顶点和顶点位置
                 tri_num_1 = point_list1.length() / 3  # 顶点数除以3，三角面片的数量
 
-                while count < itr2.count() - 1:    # 最后是同一个对象，所以减一
+                while count < itr2.count() - 1:  # 最后是同一个对象，所以减一
                     count += 1
                     itr2.setIndex(count, util.asIntPtr())
 
@@ -191,9 +185,9 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     p1 = [1, 2, 3]
                     for i in range(tri_num_1):
                         # 获取第一个三角面的点和法线
-                        p1[0] = point_list1[i*3]
-                        p1[1] = point_list1[i*3+1]
-                        p1[2] = point_list1[i*3+2]
+                        p1[0] = point_list1[i * 3]
+                        p1[1] = point_list1[i * 3 + 1]
+                        p1[2] = point_list1[i * 3 + 2]
                         u1 = p1[0] - p1[1]
                         v1 = p1[0] - p1[2]
                         n1 = u1 ^ v1
@@ -203,18 +197,18 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         for j in range(tri_num_2):
 
                             # 另一个三角面的点和法线
-                            p2[0] = point_list2[j*3]
-                            p2[1] = point_list2[j*3+1]
-                            p2[2] = point_list2[j*3+2]
+                            p2[0] = point_list2[j * 3]
+                            p2[1] = point_list2[j * 3 + 1]
+                            p2[2] = point_list2[j * 3 + 2]
                             u2 = p2[0] - p2[1]
                             v2 = p2[0] - p2[2]
                             n2 = u2 ^ v2
                             n2.normalize()
 
-                            u = n1 ^ n2       # 法线差乘 平面交线方向
+                            u = n1 ^ n2  # 法线差乘 平面交线方向
                             x = abs(u.x)
                             y = abs(u.y)
-                            z = abs(u.z)       # 各个方向夹角
+                            z = abs(u.z)  # 各个方向夹角
                             # 两个面几乎平行，不考虑
 
                             if (x + y + z) < thersold:
@@ -222,7 +216,7 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
                             v1 = n2 * (p1[0] - p2[0])
                             v2 = n2 * (p1[1] - p2[0])
-                            v3 = n2 * (p1[2] - p2[0])        # 点乘
+                            v3 = n2 * (p1[2] - p2[0])  # 点乘
                             # 如果有两个点几乎重合,跳过
                             if abs(v1) < thersold:
                                 continue
@@ -230,7 +224,6 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                                 continue
                             if abs(v3) < thersold:
                                 continue
-
 
                             # 其中一个正负不同，即为不在同一边，说明与三角形与平面穿插
                             if not (v1 > 0 and v2 > 0 and v3 > 0) or not (v1 < 0 and v2 < 0 and v3 < 0):
@@ -252,7 +245,6 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
                                 if self.triangleInside(hp1, p2[0], p2[1], p2[2]) or \
                                         self.triangleInside(hp2, p2[0], p2[1], p2[2]):
-
                                     face_list.add("%s.f[%s]" % (node.fullPathName(), itr1.index()))
                                     face_list.add("%s.f[%s]" % (node.fullPathName(), itr2.index()))
 
@@ -324,7 +316,6 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     if f != None:
                         self.hitface_list += self.find_intersection_other(sellist[j], sellist[i])  # 两个对象都需要
 
-
             centerpos = [0, 1, 2]
             for face in self.hitface_list:
 
@@ -332,9 +323,8 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
                 pos = pm.xform(face, q=1, ws=1, t=1)
                 for i in range(3):
-                    centerpos[i] = (pos[i] + pos[i+3] + pos[i+6] + pos[i+9])/4      # 求面中心点位置
+                    centerpos[i] = (pos[i] + pos[i + 3] + pos[i + 6] + pos[i + 9]) / 4  # 求面中心点位置
                 self.textEdit_Pos.append(str(centerpos))
-
 
             pm.select(self.hitface_list)
             self.lineEdit_time.setText(str(time.time() - curr))
@@ -349,7 +339,6 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         curr = time.time()
         hitface_list = self.find_intersection_self()
 
-
         centerpos = [0, 1, 2]
         for face in hitface_list:
             name = str(face).split("u'|")[-1].split("'")[0]
@@ -358,7 +347,7 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
             pos = pm.xform(face, q=1, ws=1, t=1)
             for i in range(3):
-                centerpos[i] = (pos[i] + pos[i+3] + pos[i+6] + pos[i+9])/4      # 求面中心点位置
+                centerpos[i] = (pos[i] + pos[i + 3] + pos[i + 6] + pos[i + 9]) / 4  # 求面中心点位置
             self.textEdit_Pos.append(str(centerpos))
 
         pm.select(self.hitface_list)
@@ -367,8 +356,6 @@ class CheckIntersectionWin(MayaQWidgetBaseMixin, QtWidgets.QWidget):
     # 选择所有穿插面
     def select_all(self):
         pm.select(self.hitface_list)
-
-   
 
     # QListWidget 响应函数
     def item_click_multiple(self):
@@ -385,13 +372,6 @@ def main():
     win = CheckIntersectionWin()
     return win
 
+
 if __name__ == "main":
     main()
-
-# import sys
-# MODULE = r"D:\Users\82047\Desktop\repo\TDTest\TDTest"
-# if MODULE not in sys.path:
-#     sys.path.append(MODULE)
-# import model_intersection
-# reload(model_intersection)
-# model_intersection.main()
